@@ -68,7 +68,7 @@ export default function ImoveisList() {
   const [showCodigoSug, setShowCodigoSug] = useState(false);
 
   useEffect(() => {
-    supabase.from("properties").select("codigo, cidade, bairro, nome_condominio").neq("status", "inativo").then(({ data }) => {
+    supabase.from("properties").select("codigo, cidade, bairro, nome_condominio").in("status", ["disponivel", "reservado"]).then(({ data }) => {
       setTotalCount(data ? data.length : 0);
       if (!data) return;
       const unique = [...new Set(data.map(p => p.nome_condominio).filter(Boolean))].sort();
@@ -96,7 +96,7 @@ export default function ImoveisList() {
     setLoading(true);
     setPage(1);
     try {
-      let q = supabase.from("properties").select("*").neq("status", "inativo");
+      let q = supabase.from("properties").select("*").in("status", ["disponivel", "reservado"]);
       if (f.tipo) q = q.eq("tipo", f.tipo);
       if (f.finalidade) q = q.eq("finalidade", f.finalidade);
       if (f.cidade) q = q.ilike("cidade", `%${f.cidade}%`);

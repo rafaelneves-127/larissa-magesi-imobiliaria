@@ -32,7 +32,7 @@ export default function ImovelDetail({ settings = {} }) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    supabase.from("properties").select("*").eq("codigo", id).maybeSingle().then(({ data }) => {
+    supabase.from("properties").select("*").eq("codigo", id).in("status", ["disponivel", "reservado"]).maybeSingle().then(({ data }) => {
       if (cancelled) return;
       setProp(data || null);
       setLoading(false);

@@ -37,8 +37,12 @@ export default function Dashboard() {
   useEffect(() => {
     Promise.all([
       supabase.from("leads").select("*"),
-      supabase.from("properties").select("id", { count: "exact", head: true }),
-    ]).then(([{ data: leads }, { count: total_imoveis }]) => {
+      supabase.from("properties").select("status"),
+    ]).then(([{ data: leads }, { data: propsList }]) => {
+      const props = propsList || [];
+      const total_imoveis = props.length;
+      const imoveis_disponiveis = props.filter(p => p.status === "disponivel" || p.status === "reservado").length;
+      const imoveis_vendidos = props.filter(p => p.status === "vendido").length;
       if (!leads) return;
       const count = (stage) => leads.filter((l) => l.stage === stage).length;
       const fechados = count("fechado");
@@ -71,6 +75,8 @@ export default function Dashboard() {
         valor_fechado: leads.filter((l) => l.stage === "fechado").reduce((a, l) => a + (l.orcamento || 0), 0),
         perdidos: count("perdido"),
         total_imoveis: total_imoveis || 0,
+        imoveis_disponiveis,
+        imoveis_vendidos,
         por_origem, funil, evolucao_mensal, por_temperatura,
       });
     });
@@ -102,6 +108,8 @@ export default function Dashboard() {
         <Kpi testid="kpi-aberto" icon={DollarSign} label="Em oportunidades abertas" value={formatMoney(s.valor_aberto)} />
         <Kpi testid="kpi-fechado" icon={DollarSign} label="Em negócios fechados" value={formatMoney(s.valor_fechado)} tone="gold" />
         <Kpi testid="kpi-imoveis" icon={Home} label="Imóveis cadastrados" value={s.total_imoveis} />
+        <Kpi testid="kpi-imoveis-disponiveis" icon={Home} label="Disponíveis no site" value={s.imoveis_disponiveis} />
+        <Kpi testid="kpi-imoveis-vendidos" icon={Home} label="Vendidos" value={s.imoveis_vendidos} tone="gold" />
         <Kpi testid="kpi-perdidos" icon={X} label="Leads perdidos" value={s.perdidos} />
       </div>
 
